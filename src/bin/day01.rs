@@ -23,25 +23,33 @@ fn calibration_value1(line: &str) -> Option<u32> {
 }
 
 fn calibration_value2(line: &str) -> Option<u32> {
-    let digit_values = (1..=9).map(|d| (d.to_string(), d));
-    let spelled_values = vec![
-        ("one".to_string(), 1),
-        ("two".to_string(), 2),
-        ("three".to_string(), 3),
-        ("four".to_string(), 4),
-        ("five".to_string(), 5),
-        ("six".to_string(), 6),
-        ("seven".to_string(), 7),
-        ("eight".to_string(), 8),
-        ("nine".to_string(), 9),
+    let digit_spellings = vec![
+        ("1", 1),
+        ("2", 2),
+        ("3", 3),
+        ("4", 4),
+        ("5", 5),
+        ("6", 6),
+        ("7", 7),
+        ("8", 8),
+        ("9", 9),
+        ("one", 1),
+        ("two", 2),
+        ("three", 3),
+        ("four", 4),
+        ("five", 5),
+        ("six", 6),
+        ("seven", 7),
+        ("eight", 8),
+        ("nine", 9),
     ];
 
     // (digit_value, index)
     let mut leftmost_digit = (0, line.len());
     let mut rightmost_digit = (0, 0);
 
-    for (digit_spelling, digit_value) in digit_values.chain(spelled_values) {
-        for (index, _) in line.match_indices(&digit_spelling) {
+    for (digit_spelling, digit_value) in digit_spellings {
+        for (index, _) in line.match_indices(digit_spelling) {
             if index <= leftmost_digit.1 {
                 leftmost_digit = (digit_value, index);
             }
