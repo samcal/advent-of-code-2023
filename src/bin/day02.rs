@@ -33,11 +33,10 @@ impl Game {
         let (game_label, cube_sets) = raw_game.split_once(": ")?;
         let (_, raw_id) = game_label.split_once(' ')?;
         let id = raw_id.parse().ok()?;
-        let mut revealed_cube_sets = Vec::new();
-        for raw_cube_set in cube_sets.split("; ") {
-            let cube_set = CubeSet::parse(raw_cube_set)?;
-            revealed_cube_sets.push(cube_set);
-        }
+        let revealed_cube_sets = cube_sets
+            .split("; ")
+            .map(|raw_cube_set| CubeSet::parse(raw_cube_set).unwrap())
+            .collect();
         let game = Game {
             id,
             revealed_cube_sets,
@@ -46,12 +45,9 @@ impl Game {
     }
 
     fn revelations_subset_of(&self, other_set: &CubeSet) -> bool {
-        for cube_set in self.revealed_cube_sets.iter() {
-            if !cube_set.is_subset_of(other_set) {
-                return false;
-            }
-        }
-        true
+        self.revealed_cube_sets
+            .iter()
+            .all(|cube_set| cube_set.is_subset_of(other_set))
     }
 
     fn smallest_covering_set(&self) -> CubeSet {
