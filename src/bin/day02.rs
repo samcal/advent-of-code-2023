@@ -1,6 +1,8 @@
 use std::cmp;
 use std::fs;
 
+use advent_of_code_2023::{mconcat, Monoid, Semigroup};
+
 fn main() {
     let input = fs::read_to_string("inputs/day02").unwrap();
     let games: Vec<Game> = input
@@ -51,53 +53,61 @@ impl Game {
     }
 
     fn smallest_covering_set(&self) -> CubeSet {
-        let mut smallest_cube_set = CubeSet::empty();
-        for cube_set in self.revealed_cube_sets.iter() {
-            smallest_cube_set.red_count = cmp::max(smallest_cube_set.red_count, cube_set.red_count);
-            smallest_cube_set.green_count =
-                cmp::max(smallest_cube_set.green_count, cube_set.green_count);
-            smallest_cube_set.blue_count =
-                cmp::max(smallest_cube_set.blue_count, cube_set.blue_count);
-        }
-        smallest_cube_set
+        mconcat(self.revealed_cube_sets.clone().into_iter())
     }
 }
 
+#[derive(Copy, Clone)]
 struct CubeSet {
     red_count: u32,
     green_count: u32,
     blue_count: u32,
 }
 
-impl CubeSet {
-    fn empty() -> CubeSet {
+impl Semigroup for CubeSet {
+    fn mappend(&self, b: &Self) -> Self {
+        CubeSet {
+            red_count: cmp::max(self.red_count, b.red_count),
+            green_count: cmp::max(self.green_count, b.green_count),
+            blue_count: cmp::max(self.blue_count, b.blue_count),
+        }
+    }
+}
+
+impl Monoid for CubeSet {
+    fn mempty() -> Self {
         CubeSet {
             red_count: 0,
             green_count: 0,
             blue_count: 0,
         }
     }
+}
 
+impl CubeSet {
     fn parse(raw_cubes: &str) -> Option<CubeSet> {
-        let mut red_count = 0;
-        let mut green_count = 0;
-        let mut blue_count = 0;
-        for raw_color_count in raw_cubes.split(", ") {
-            let (raw_count, raw_color) = raw_color_count.split_once(' ')?;
-            let count = raw_count.parse().ok()?;
+        Some(mconcat(raw_cubes.split(", ").map(|raw_color_count| {
+            let (raw_count, raw_color) = raw_color_count.split_once(' ').unwrap();
+            let count: u32 = raw_count.parse().ok().unwrap();
             match raw_color {
-                "red" => red_count = count,
-                "green" => green_count = count,
-                "blue" => blue_count = count,
-                _ => return None,
+                "red" => CubeSet {
+                    red_count: count,
+                    green_count: 0,
+                    blue_count: 0,
+                },
+                "green" => CubeSet {
+                    red_count: 0,
+                    green_count: count,
+                    blue_count: 0,
+                },
+                "blue" => CubeSet {
+                    red_count: 0,
+                    green_count: 0,
+                    blue_count: count,
+                },
+                _ => CubeSet::mempty(),
             }
-        }
-        let cube_set = CubeSet {
-            red_count,
-            green_count,
-            blue_count,
-        };
-        Some(cube_set)
+        })))
     }
 
     fn is_subset_of(&self, other_set: &CubeSet) -> bool {
