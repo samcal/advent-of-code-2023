@@ -49,7 +49,7 @@ fn calibration_value2(line: &str) -> Option<u32> {
     let mut rightmost_digit = (0, 0);
 
     for (digit_spelling, digit_value) in digit_spellings {
-        for (index, _) in line.match_indices(digit_spelling) {
+        for (index, _) in line.match_indices(&digit_spelling) {
             if index <= leftmost_digit.1 {
                 leftmost_digit = (digit_value, index);
             }
@@ -60,7 +60,7 @@ fn calibration_value2(line: &str) -> Option<u32> {
     }
 
     if leftmost_digit.0 == 0 || rightmost_digit.0 == 0 {
-        return None
+        return None;
     }
 
     let value = leftmost_digit.0 * 10 + rightmost_digit.0;
